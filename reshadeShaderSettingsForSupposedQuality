@@ -1,0 +1,48 @@
+Observations about various Reshade shaders and some advice for them.
+Reshade focused, but are applicable for other implementations.
+Ensure the depth buffer is properly setup using DisplayDepth in Reshade.
+Some settings may not be available.
+
+"Less of a 'blur filter'" Fast Approximate Anti-Aliasing FXAA # Supposed to remove aliasing or jagged / serrated / sawtoothed edges.
+Subpixel aliasing removal / Subpixel anti-aliasing / fxaaQualitySubpix = "0.0" # Main cause of "over-smoothing". Set as low as tolerable.
+FXAA_QUALITY_PRESET = "39" # Dithering, which occurs at lower settings, is more "grainy".
+Edge detection threshold = "0.0" # Minimize to avoid "legacy" limitations. Lower settings are supposed to find and remove more aliasing.
+Edge detection threshold minimum = "0.0" # "Minimize to avoid "legacy limitations". Lower settings are supposed to find and remove more aliasing.
+
+
+"Higher quality" Subpixel Morphological Anti-Aliasing SMAA # Supposed to remove aliasing or jagged / serrated / sawtoothed edges.
+Corner rounding = "0.0" # Similar to subpixel aliasing removal in terms of smoothing.
+color edge detection # Supposed to be more accurate. Supposedly weighted is even more so, at least over max.
+Threshold = "0.0" # Similar to edge detection threshold / threshold minimum. Could be 0.05 as well.
+Depth threshold = (0.1 * Threshold) # Similar to edge detection threshold / threshold minimum.
+Search steps = Highest possible # Similar to edge detection threshold / threshold minimum. How much should aliasing be searched out? Higher settings means more searching but possibly lower performance.
+Diagonal search steps = Highest possible # Similar to edge detection threshold / threshold minimum. How much should aliasing be searched out? Higher settings means more searching but possibly lower performance.
+SMAA_USE_EXTENDED_EDGE_DETECTION = "1" # Might find and remove more aliasing.
+
+
+Sharpening / Clarity # Recommended to use post-process anti-aliasing with these to balance.
+Intensity / Strength Subjective # Controls the perceived sharpness. Lower settings usually result in less. Higher settings look sharper but with more of a "processed" appearance, artifacts, and imperfections might be more visible.
+
+
+Inverse Tone Mapping / Advanced AutoHDR # According to my understanding expands an SDR application's capabilities to the peak brightness and colorspace of an HDR display but is not the same as a "proper" HDR implementation. Similar to RTX HDR. Use where HDR is not available but the display supports it. Must expose 16-bit with AutoHDR addon or dxvk. However, these methods are not expected to be "anti-cheat" friendly. Some shaders are incompatible such as sharpening and hdr compatible ones must be used such as hdr cas or rcas.
+# Once AutoHDR addon or custom dxvk is installed and the app launches, customize the shaders. It may then appear washed out or over-exposed. If reshade warns about failing to compile such shaders, specify CSP_SCRGB or CSP_HDR10 in CSP_OVERRIDE.
+# Some settings may be changed for "higher quality" or personal preferences.
+# Use only one method at a time. So inverse or advanced only.
+
+Inverse Tone Mapping
+Target brightess = peak brightness of the display.
+Input white point = SDR brightness of the app. # Usually will be 80-100 nits. SDR Brightness can usually be measured by using the SDR/HDR analysis shader alone.
+Max input brightness = SDR brightness of the app. # Usually will be 80-100 nits. SDR Brightness can usually be measured by using the SDR/HDR analysis shader alone.
+
+Advanced AutoHDR
+Input Color Space = "Auto"
+Output white level (paper white) nits = SDR brightness of the app. # Usually will be 80-100 nits. SDR Brightness can usually be measured by using the SDR/HDR analysis shader alone.
+Output Color Space = "HDR scRGB" # scRGB is supposedly "higher quality" than HDR10.
+Auto HDR method = "By luminance (color hue conserving) - RECCOMENDED"
+Auto HDR target/max brightness = peak brightness of the display.
+
+
+Ambient Occlusion / AO / Screen Space Global Illumination / SSGI / RTGI / SSRTGI / GI # Supposed to add "higher quality" lighting and shadow simulation.
+# Most settings are subjective and possibly best left to default if unsure. 
+# For RTGI, Launchpad must be setup first.
+Fadeout / Fade-Out Range / Fade Out Distance = Highest possible. # Higher settings have more of the scene affected by the shader.
